@@ -103,8 +103,11 @@ $(function() {
   $('.list').children('li').each(function() {
     $(this).hide();
     var data = $(this).data('category-type')
-    if(data === value){
+    if(value === data) {
       $(this).show();
+    }
+    if (value === 'all') {
+      $('.list').children('li').show();
     }
   });
   })
