@@ -100,16 +100,17 @@
 $(function() {
   $('.select').on('change', function() {
     var value = $(this).val();
-  $('.list').children('li').each(function() {
-    $(this).hide();
-    var data = $(this).data('category-type')
-    if(value === data) {
-      $(this).show();
-    }
-    if (value === 'all') {
-      $('.list').children('li').show();
-    }
-  });
+
+    $('.list').children('li').each(function() {
+      var data = $(this).data('category-type');
+
+      $(this).hide();
+      if(value === data) {
+        $(this).show();
+      } else if (value === 'all') {
+        $('.list').children('li').show();
+      }
+    });
   })
 })
 </script>
