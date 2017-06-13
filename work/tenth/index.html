@@ -21,16 +21,23 @@
       </div>
       <button id="js-search-button" class="search__btn">検索する</button>
     </div>
-    <ul class="lists"></ul>
+    <ul class="lists">
+      <!-- <li class='lists__item'>
+        <div class='lists__item__inner'>
+          <a href='' class='lists__item__link' target='_blank'>
+            <img src='' class='lists__item__img' alt=''>
+            <p class='lists__item__detail'>作品名：</p>
+            <p class='lists__item__detail'>作者　：</p>
+            <p class='lists__item__detail'>出版社：</p>
+          </a>
+        </div>
+      </li> -->
+    </ul>
   </div>
 </div>
 <script src="../../common/js/jquery.js"></script>
 <script>
-// 楽天ブックスの総合検索APIを使って製作してください。
-// answerの挙動を良く見てね！
-//
-// https://webservice.rakuten.co.jp/api/booksbooksearch/
-//
+
 // $.ajax と $.each を調べてみてください
 // 以下は今回使う$.ajaxの基本的な形です。
 //
@@ -49,21 +56,84 @@
 //
 // オブジェクトで取得したデータへのアクセス方法 以下参考程度に
 // http://qiita.com/marumaru8228/items/65fc684383b096f0e548
-//
-//
-  // $.ajax({
-  //   url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-  //   type: 'GET',
-  //   datatype: 'json',
-  //   data: {
-  //     // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
-  //     applicationId: '1019399324990976605', // (今回はこのIDを使用してください)
-  //     booksGenreId: '001'
-  //   },
+
   // }).done(function(data) {
   //   // この中にデータ取得後の動きを記述していきます。
-  // });
-//
+
+
+$(function() {
+  var keyword = '';
+  var page = 1;
+
+  $('.search__btn').on('click', function() {
+    var user__input = $('.search__text__input').val();
+
+    $('.lists').empty();
+
+    if (keyword === user__input) {
+      page++;
+    } else {
+      page = 1;
+    }
+
+    keyword = user__input;
+
+    // var Click_num = 1;
+    // if (Click_num % 2 === 0){
+    //    var even_num = user__input;
+    // } else {
+    //    var odd_num = user__input;
+    // }
+    //
+    // if (even_num === odd_num) {
+    //   var page_num = 1;
+    // } else {
+    //   var page_num = 1;
+    // }
+
+    $.ajax({
+      url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+      type: 'GET',
+      dataType: 'json',
+      data: {
+        keyword: user__input,
+        applicationId: '1019399324990976605',
+        hits: '20',
+        page: page
+      }
+    })
+
+    .done(function(done_data) {
+      done_data.Items.forEach(function(book) {
+        // console.log(book);
+         var template =
+          '<li class="lists__item">' +
+            '<div class="lists__item__inner">' +
+             '<a href="' + (book.Item.itemUrl) + '" class="lists__item__link" target="_blank">' +
+               '<img src="' + (book.Item.largeImageUrl) + '" class="lists__item__img" alt="">' +
+               '<p class="lists__item__detail">作品名：  '+ (book.Item.title) +'</p>' +
+               '<p class="lists__item__detail">作者　：  '+ (book.Item.author) +'</p>' +
+               '<p class="lists__item__detail">出版社：  '+ (book.Item.publisherName) +'</p>' +
+             '</a>' +
+           '</div>' +
+          '</li>';
+
+        $('.lists').append(template);
+      })
+    })
+    .fail(function(fail_data) {
+      var error = (fail_data.responseText)
+      console.log(error);
+      if (error === '{"error":"wrong_parameter","error_description":"keyword length must be over 2 characters"}') {
+        alert('文字数が少ないから検索できへんわ');
+      } else if (error === '{"error":"too_many_requests","error_description":"number of allowed requests has been exceeded for this API. please try again soon."}') {
+        alert('検索かけすぎ');
+      }
+    });
+  });
+});
+
+
 </script>
 </body>
 </html>
