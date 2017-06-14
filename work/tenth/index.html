@@ -65,6 +65,15 @@ $(function() {
   var keyword = '';
   var page = 1;
 
+  // $('.search__text__input').on('keyup', function(e) {
+  //   console.log(e)
+  //   if (e.keyCode === 13) {
+  //     console.log('Enterだよん');
+  //   } else {
+  //     console.log('それ以外');
+  //   }
+  // });
+
   $('.search__btn').on('click', function() {
     var user__input = $('.search__text__input').val();
 
@@ -78,61 +87,79 @@ $(function() {
 
     keyword = user__input;
 
-    // var Click_num = 1;
-    // if (Click_num % 2 === 0){
-    //    var even_num = user__input;
-    // } else {
-    //    var odd_num = user__input;
-    // }
-    //
-    // if (even_num === odd_num) {
-    //   var page_num = 1;
-    // } else {
-    //   var page_num = 1;
-    // }
-
-    $.ajax({
-      url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-      type: 'GET',
-      dataType: 'json',
-      data: {
-        keyword: user__input,
-        applicationId: '1019399324990976605',
-        hits: '20',
-        page: page
-      }
-    })
-
-    .done(function(done_data) {
-      done_data.Items.forEach(function(book) {
-        // console.log(book);
-         var template =
-          '<li class="lists__item">' +
-            '<div class="lists__item__inner">' +
-             '<a href="' + (book.Item.itemUrl) + '" class="lists__item__link" target="_blank">' +
-               '<img src="' + (book.Item.largeImageUrl) + '" class="lists__item__img" alt="">' +
-               '<p class="lists__item__detail">作品名：  '+ (book.Item.title) +'</p>' +
-               '<p class="lists__item__detail">作者　：  '+ (book.Item.author) +'</p>' +
-               '<p class="lists__item__detail">出版社：  '+ (book.Item.publisherName) +'</p>' +
-             '</a>' +
-           '</div>' +
-          '</li>';
-
-        $('.lists').append(template);
-      })
-    })
-    .fail(function(fail_data) {
-      var error = (fail_data.responseText)
-      console.log(error);
-      if (error === '{"error":"wrong_parameter","error_description":"keyword length must be over 2 characters"}') {
-        alert('文字数が少ないから検索できへんわ');
-      } else if (error === '{"error":"too_many_requests","error_description":"number of allowed requests has been exceeded for this API. please try again soon."}') {
-        alert('検索かけすぎ');
-      }
-    });
+    ajaxRequest(keyword, page);
   });
 });
 
+function ajaxRequest(keyword, page) {
+  $.ajax({
+    url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+    type: 'GET',
+    dataType: 'json',
+    data: {
+      keyword: keyword,
+      applicationId: '1019399324990976605',
+      hits: '20',
+      page: page
+    }
+  })
+  .done(success)
+  .fail(error_m);
+}
+
+function success(data) {
+  if (!data.count) {
+    alert('検索網に引っかかりませんでした')
+  }
+
+  data.Items.forEach(function(book) {
+    hits_show(book);
+  })
+}
+
+function no_hit(done_data){
+  if (!done_data.count) {
+    alert('検索網に引っかかりませんでした')
+  }
+}
+
+function hits_show(book){
+  var template =
+   '<li class="lists__item">' +
+     '<div class="lists__item__inner">' +
+      '<a href="' + (book.Item.itemUrl) + '" class="lists__item__link" target="_blank">' +
+        '<img src="' + (book.Item.largeImageUrl) + '" class="lists__item__img" alt="">' +
+        '<p class="lists__item__detail">作品名：  '+ (book.Item.title) +'</p>' +
+        '<p class="lists__item__detail">作者　：  '+ (book.Item.author) +'</p>' +
+        '<p class="lists__item__detail">出版社：  '+ (book.Item.publisherName) +'</p>' +
+      '</a>' +
+    '</div>' +
+   '</li>';
+
+ $('.lists').append(template);
+}
+
+function error_m(fail_data){
+  var error = (fail_data.responseJSON.error_description);
+  var message = '';
+
+  if (error === 'keyword length must be over 2 characters') {
+    message = '文字数が少ないから検索できへんわ';
+  } else if (error === 'number of allowed requests has been exceeded for this API. please try again soon.') {
+    message = '検索かけすぎ';
+  }
+  switch(error) {
+    case 'keyword length must be over 2 characters':
+      message = '文字数が少ないから検索できへんわ';
+      break;
+    case 'number of allowed requests has been exceeded for this API. please try again soon.':
+      message = '検索かけすぎ';
+      break;
+  }
+
+  alert(message);
+  return;
+}
 
 </script>
 </body>
